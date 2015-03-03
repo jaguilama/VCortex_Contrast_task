@@ -1,0 +1,1223 @@
+#include <css_inc.h>
+
+// Integer External Variables
+
+#define inter_trial_time _int0
+#define fixation_time _int1
+#define tiempo_punto_fijacion _int2
+#define fixation_time_delta _int3
+#define stimulus_time _int4
+#define response_time_1 _int5
+#define response_time_2 _int6
+#define response_time_3 _int7
+#define reward_time _int8
+#define trial_total _int9
+#define acierto _int10
+
+// Real External Variables
+
+#define R_1 _float0
+#define R_2 _float1
+#define R_3 _float2
+#define radius _float3
+#define target_window_X _float4
+#define target_window_Y _float5
+
+// Global Variables for simulated eye movement with mouse
+
+int x, y, b, mx, my;
+
+// Function Prototypes
+
+void send_code(int code);
+int maintain_fixation();
+void mouse_to_eye();
+void write_text_file(float X, float Y);
+//int mod(int a, int b);
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+
+main () {
+
+int  pos, condition, trial, sector, break_control, block, fix_state, cond, window, condition_absolute, fijacion1, fijacion2;
+float porcentage;
+
+				Gon_off(TEST9, ON); //fondo gris
+				Gflush(1);
+	
+//set_EOGnew_x(0);
+//set_EOGnew_y(0);
+
+//aizq=0;
+//ader=0;
+//trial_total=0;
+//trialder=0;
+sector=0;
+window=0;
+break_control=1;
+fix_state=0;
+trial=get_trial_num();	
+condition_absolute=BLOCKget_cond_num();
+block=BLOCKget_block_num();
+set_ms_reward_duration(reward_time);
+
+//write_text_file(Receptor_X, Receptor_Y);
+//SOUNDload(1,"notify.wav");
+//SOUNDprep(1);
+
+			//sector=condition_absolute-2*((int)condition_absolute/(int)2);
+
+							//if(sector==1)
+							//	{trializq=trializq+1;}
+			
+							//if(sector==0)	
+							//	{trialder=trialder+1;}	
+			
+
+// Inter Trial wait time
+//put_eye_data_in_buf(1);
+collect_data(ON);
+encode(START_EYE_DATA);
+//encode(ESTO_ES_UN_ENCODE);
+send_code(0XFF); // Start recording
+DEVoutp(0,0x02,0x40);
+
+
+			set_timer (inter_trial_time);
+			while(!timer_expired()){} // Wait inter-trial time
+
+if(radius==1){
+
+		send_code(0xAA);
+		DEVoutp(0,0x02,0x40);
+	
+		Mprintf(1,"Fix: %i [%i %i] (%i %i)", condition_absolute, fix_state, break_control, sector, window);
+		
+		EYE_WINset(1, fabs(R_1), 0, target_window_X, target_window_Y);
+		ITEM_POSmark_pos(EYE_WIN,1,3);
+
+		EYE_WINset(2, fabs(R_1)*sqrt((float)(0.5)), fabs(R_1)*sqrt((float)(0.5)), target_window_X, target_window_Y);
+		ITEM_POSmark_pos(EYE_WIN,2,3);
+
+		EYE_WINset(3, 0, fabs(R_1), target_window_X, target_window_Y);
+		ITEM_POSmark_pos(EYE_WIN,3,3);
+
+		EYE_WINset(4, (float)(-1)*fabs(R_1)*sqrt((float)(0.5)), fabs(R_1)*sqrt((float)(0.5)), target_window_X, target_window_Y);
+		ITEM_POSmark_pos(EYE_WIN,4,3);
+
+		EYE_WINset(5, (float)(-1)*fabs(R_1), 0, target_window_X, target_window_Y);
+		ITEM_POSmark_pos(EYE_WIN,5,3);
+
+		EYE_WINset(6, (float)(-1)*fabs(R_1)*sqrt((float)(0.5)), (float)(-1)*fabs(R_1)*sqrt((float)(0.5)), target_window_X, target_window_Y);
+		ITEM_POSmark_pos(EYE_WIN,6,3);
+
+		EYE_WINset(7, 0, (float)(-1)*fabs(R_1), target_window_X,target_window_Y);
+		ITEM_POSmark_pos(EYE_WIN,7,3);
+
+		EYE_WINset(8, fabs(R_1)*sqrt((float)(0.5)), (float)(-1)*fabs(R_1)*sqrt((float)(0.5)), target_window_X,target_window_Y);
+		ITEM_POSmark_pos(EYE_WIN,8,3);
+
+	
+		GmoveABS(TEST1, fabs(R_1), 0);
+		GmoveABS(TEST2, fabs(R_1)*sqrt((float)(0.5)), fabs(R_1)*sqrt((float)(0.5)));
+		GmoveABS(TEST3, 0, fabs(R_1));
+		GmoveABS(TEST4, (float)(-1)*fabs(R_1)*sqrt((float)(0.5)), fabs(R_1)*sqrt((float)(0.5)));
+		GmoveABS(TEST5, (float)(-1)*fabs(R_1), 0);
+		GmoveABS(TEST6, (float)(-1)*fabs(R_1)*sqrt((float)(0.5)), (float)(-1)*fabs(R_1)*sqrt((float)(0.5)));
+		GmoveABS(TEST7, 0, (float)(-1)*fabs(R_1));
+		GmoveABS(TEST8, fabs(R_1)*sqrt((float)(0.5)), (float)(-1)*fabs(R_1)*sqrt((float)(0.5)));
+
+		Gon_off(TEST0, ON); //punto de fijación
+		Gflush(1);
+		DEVoutp(0,0x02,0x40);
+		send_code(0xFD);
+
+		set_timer(tiempo_punto_fijacion);
+		while(!timer_expired()){}
+
+		MS_TIMERset(1,fixation_time);
+
+		while(MS_TIMERcheck(1)){
+		
+			fijacion1=get_fixation_state();
+
+			if(fijacion1==0){
+
+				Gon_off(TEST0,OFF);
+				Gflush(1);}
+				//send_code(0xFA);
+				//DEVoutp(0,0x02,0x40);
+			 	//break_control=2;
+			 	//BLOCKset_next(block,condition+1);
+			 	//break;} // Break fixation
+
+			if(fijacion1 != 0) {
+				send_code(0xF9);
+				DEVoutp(0,0x02,0x40);
+				//reward();
+				MS_TIMERset(1,0);
+				MS_TIMERset(2,stimulus_time);
+				while(MS_TIMERcheck(2)){
+
+					fijacion2=get_fixation_state();							
+
+						Gon_off(TEST1,ON);
+						Gon_off(TEST2,ON);
+						Gon_off(TEST3,ON);
+						Gon_off(TEST4,ON);
+						Gon_off(TEST5,ON);
+						Gon_off(TEST6,ON);
+						Gon_off(TEST7,ON);
+						Gon_off(TEST8,ON);
+						Gon_off(TEST0,OFF);
+						Gflush(1);
+
+
+
+
+		Mprintf(2,"Fix: %i [%i %i] (%i %i)", condition_absolute, fijacion1, break_control, sector, window);
+
+						if(fijacion2 == 0){
+							
+							Gon_off(TEST0,OFF);
+							Gflush(1);}
+							//send_code(0xFA);
+							//DEVoutp(0,0x02,0x40);
+						 	//break_control=2;
+						 	//BLOCKset_next(block,condition);
+						 	//break;} // Break fixation
+
+							}
+						}
+					}
+						
+				send_code(condition_absolute);
+				DEVoutp(0,0x02,0x40);
+
+		MS_TIMERset(3,response_time_1);
+
+		if(fijacion1==0){
+		//condition_absolute=condition_absolute-1;
+		BLOCKset_next(block,condition_absolute);
+		break;
+		send_code(0xFA);
+		DEVoutp(0,0x02,0x40);}
+
+		if(fijacion1 != 0){
+		
+		Gon_off(TEST1,ON);
+		Gon_off(TEST2,ON);
+		Gon_off(TEST3,ON);
+		Gon_off(TEST4,ON);
+		Gon_off(TEST5,ON);
+		Gon_off(TEST6,ON);
+		Gon_off(TEST7,ON);
+		Gon_off(TEST8,ON);
+		Gon_off(TEST0,OFF);
+ 		Gflush(1);
+		
+		while(MS_TIMERcheck(3)){
+
+					if(ITEM_POSeye_ishere(EYE_WIN,1)){
+							
+						window=1;
+						response_correct(0);}
+						//reward();
+						//break;}
+
+					if(ITEM_POSeye_ishere(EYE_WIN,2)){
+								
+						window=2;
+						response_correct(0);}
+						//reward();
+						//break;}
+
+					if(ITEM_POSeye_ishere(EYE_WIN,3)){
+								
+						window=3;
+						response_correct(0);}
+						//reward();
+						//break;}
+
+					if(ITEM_POSeye_ishere(EYE_WIN,4)){
+								
+						window=4;
+						response_correct(0);}		
+						//reward();
+						//break;}
+
+					if(ITEM_POSeye_ishere(EYE_WIN,5)){
+								
+						window=5;
+						response_correct(0);}
+						//reward();
+						//break;}
+
+					if(ITEM_POSeye_ishere(EYE_WIN,6)){
+								
+						window=6;
+						response_correct(0);}
+						//reward();
+						//break;}
+
+					if(ITEM_POSeye_ishere(EYE_WIN,7)){
+								
+						window=7;
+						response_correct(0);}
+						//reward();
+						//break;}
+
+					if(ITEM_POSeye_ishere(EYE_WIN,8)){
+								
+						window=8;
+						response_correct(0);}
+						//reward();
+						//break;}
+
+						
+					}//cierra el MS_TIMER(3)
+							
+		Gon_off(TEST1,OFF);
+		Gon_off(TEST2,OFF);
+		Gon_off(TEST3,OFF);
+		Gon_off(TEST4,OFF);
+		Gon_off(TEST5,OFF);
+		Gon_off(TEST6,OFF);
+		Gon_off(TEST7,OFF);
+		Gon_off(TEST8,OFF);
+ 		Gflush(1);
+				}
+
+}//fin bloque 1
+
+if(radius==2){
+
+		send_code(0xBB);
+		DEVoutp(0,0x02,0x40);
+
+		Mprintf(1,"Fix: %i [%i %i] (%i %i)", condition_absolute, fix_state, break_control, sector, window);
+		
+		EYE_WINset(1, fabs(R_2), 0, target_window_X, target_window_Y);
+		ITEM_POSmark_pos(EYE_WIN,1,3);
+
+		EYE_WINset(2, fabs(R_2)*sqrt((float)(0.5)), fabs(R_2)*sqrt((float)(0.5)), target_window_X, target_window_Y);
+		ITEM_POSmark_pos(EYE_WIN,2,3);
+
+		EYE_WINset(3, 0, fabs(R_2), target_window_X, target_window_Y);
+		ITEM_POSmark_pos(EYE_WIN,3,3);
+
+		EYE_WINset(4, (float)(-1)*fabs(R_2)*sqrt((float)(0.5)), fabs(R_2)*sqrt((float)(0.5)), target_window_X, target_window_Y);
+		ITEM_POSmark_pos(EYE_WIN,4,3);
+
+		EYE_WINset(5, (float)(-1)*fabs(R_2), 0, target_window_X, target_window_Y);
+		ITEM_POSmark_pos(EYE_WIN,5,3);
+
+		EYE_WINset(6, (float)(-1)*fabs(R_2)*sqrt((float)(0.5)), (float)(-1)*fabs(R_2)*sqrt((float)(0.5)), target_window_X, target_window_Y);
+		ITEM_POSmark_pos(EYE_WIN,6,3);
+
+		EYE_WINset(7, 0, (float)(-1)*fabs(R_2), target_window_X,target_window_Y);
+		ITEM_POSmark_pos(EYE_WIN,7,3);
+
+		EYE_WINset(8, fabs(R_2)*sqrt((float)(0.5)), (float)(-1)*fabs(R_2)*sqrt((float)(0.5)), target_window_X,target_window_Y);
+		ITEM_POSmark_pos(EYE_WIN,8,3);
+
+	
+		GmoveABS(TEST1, fabs(R_2), 0);
+		GmoveABS(TEST2, fabs(R_2)*sqrt((float)(0.5)), fabs(R_2)*sqrt((float)(0.5)));
+		GmoveABS(TEST3, 0, fabs(R_2));
+		GmoveABS(TEST4, (float)(-1)*fabs(R_2)*sqrt((float)(0.5)), fabs(R_2)*sqrt((float)(0.5)));
+		GmoveABS(TEST5, (float)(-1)*fabs(R_2), 0);
+		GmoveABS(TEST6, (float)(-1)*fabs(R_1)*sqrt((float)(0.5)), (float)(-1)*fabs(R_1)*sqrt((float)(0.5)));
+		GmoveABS(TEST7, 0, (float)(-1)*fabs(R_2));
+		GmoveABS(TEST8, fabs(R_2)*sqrt((float)(0.5)), (float)(-1)*fabs(R_2)*sqrt((float)(0.5)));
+
+		Gon_off(TEST0, ON); //punto de fijación
+		Gflush(1);
+		DEVoutp(0,0x02,0x40);
+		send_code(0xFD);
+
+		set_timer(tiempo_punto_fijacion);
+		while(!timer_expired()){}
+
+		MS_TIMERset(1,fixation_time);
+
+		while(MS_TIMERcheck(1)){
+		
+			fijacion1=get_fixation_state();
+
+			if(fijacion1==0){
+
+				Gon_off(TEST0,OFF);
+				Gflush(1);}
+				//send_code(0xFA);
+				//DEVoutp(0,0x02,0x40);
+			 	//break_control=2;
+			 	//BLOCKset_next(block,condition+1);
+			 	//break;} // Break fixation
+
+			if(fijacion1 != 0) {
+				send_code(0xF9);
+				DEVoutp(0,0x02,0x40);
+				//reward();
+				MS_TIMERset(1,0);
+				MS_TIMERset(2,stimulus_time);
+				while(MS_TIMERcheck(2)){
+
+					fijacion2=get_fixation_state();							
+
+						Gon_off(TEST1,ON);
+						Gon_off(TEST2,ON);
+						Gon_off(TEST3,ON);
+						Gon_off(TEST4,ON);
+						Gon_off(TEST5,ON);
+						Gon_off(TEST6,ON);
+						Gon_off(TEST7,ON);
+						Gon_off(TEST8,ON);
+						Gon_off(TEST0,OFF);
+						Gflush(1);
+
+
+
+
+		Mprintf(2,"Fix: %i [%i %i] (%i %i)", condition_absolute, fijacion1, break_control, sector, window);
+
+						if(fijacion2 == 0){
+							
+							Gon_off(TEST0,OFF);
+							Gflush(1);}
+							//send_code(0xFA);
+							//DEVoutp(0,0x02,0x40);
+						 	//break_control=2;
+						 	//BLOCKset_next(block,condition);
+						 	//break;} // Break fixation
+
+							}
+						}
+					}
+						
+				send_code(condition_absolute);
+				DEVoutp(0,0x02,0x40);
+
+		MS_TIMERset(3,response_time_2);
+
+		if(fijacion1==0){
+		//condition_absolute=condition_absolute-1;
+		BLOCKset_next(block,condition_absolute);
+		break;
+		send_code(0xFA);
+		DEVoutp(0,0x02,0x40);}
+
+		if(fijacion1 != 0){
+		
+		Gon_off(TEST1,ON);
+		Gon_off(TEST2,ON);
+		Gon_off(TEST3,ON);
+		Gon_off(TEST4,ON);
+		Gon_off(TEST5,ON);
+		Gon_off(TEST6,ON);
+		Gon_off(TEST7,ON);
+		Gon_off(TEST8,ON);
+		Gon_off(TEST0,OFF);
+ 		Gflush(1);
+		
+		while(MS_TIMERcheck(3)){
+
+					if(ITEM_POSeye_ishere(EYE_WIN,1)){
+							
+						window=1;
+						response_correct(0);}
+						//reward();
+						//break;}
+
+					if(ITEM_POSeye_ishere(EYE_WIN,2)){
+								
+						window=2;
+						response_correct(0);}
+						//reward();
+						//break;}
+
+					if(ITEM_POSeye_ishere(EYE_WIN,3)){
+								
+						window=3;
+						response_correct(0);}
+						//reward();
+						//break;}
+
+					if(ITEM_POSeye_ishere(EYE_WIN,4)){
+								
+						window=4;
+						response_correct(0);}		
+						//reward();
+						//break;}
+
+					if(ITEM_POSeye_ishere(EYE_WIN,5)){
+								
+						window=5;
+						response_correct(0);}
+						//reward();
+						//break;}
+
+					if(ITEM_POSeye_ishere(EYE_WIN,6)){
+								
+						window=6;
+						response_correct(0);}
+						//reward();
+						//break;}
+
+					if(ITEM_POSeye_ishere(EYE_WIN,7)){
+								
+						window=7;
+						response_correct(0);}
+						//reward();
+						//break;}
+
+					if(ITEM_POSeye_ishere(EYE_WIN,8)){
+								
+						window=8;
+						response_correct(0);}
+						//reward();
+						//break;}
+
+						
+					}//cierra el MS_TIMER(3)
+							
+		Gon_off(TEST1,OFF);
+		Gon_off(TEST2,OFF);
+		Gon_off(TEST3,OFF);
+		Gon_off(TEST4,OFF);
+		Gon_off(TEST5,OFF);
+		Gon_off(TEST6,OFF);
+		Gon_off(TEST7,OFF);
+		Gon_off(TEST8,OFF);
+ 		Gflush(1);
+				}
+
+}//fin bloque 2
+
+if(radius==3){
+
+		send_code(0xCC);
+		DEVoutp(0,0x02,0x40);
+	
+		Mprintf(1,"Fix: %i [%i %i] (%i %i)", condition_absolute, fix_state, break_control, sector, window);
+		
+		EYE_WINset(1, fabs(R_3), 0, target_window_X, target_window_Y);
+		ITEM_POSmark_pos(EYE_WIN,1,3);
+
+		EYE_WINset(2, fabs(R_3)*sqrt((float)(0.5)), fabs(R_3)*sqrt((float)(0.5)), target_window_X, target_window_Y);
+		ITEM_POSmark_pos(EYE_WIN,2,3);
+
+		EYE_WINset(3, 0, fabs(R_3), target_window_X, target_window_Y);
+		ITEM_POSmark_pos(EYE_WIN,3,3);
+
+		EYE_WINset(4, (float)(-1)*fabs(R_3)*sqrt((float)(0.5)), fabs(R_3)*sqrt((float)(0.5)), target_window_X, target_window_Y);
+		ITEM_POSmark_pos(EYE_WIN,4,3);
+
+		EYE_WINset(5, (float)(-1)*fabs(R_3), 0, target_window_X, target_window_Y);
+		ITEM_POSmark_pos(EYE_WIN,5,3);
+
+		EYE_WINset(6, (float)(-1)*fabs(R_3)*sqrt((float)(0.5)), (float)(-1)*fabs(R_3)*sqrt((float)(0.5)), target_window_X, target_window_Y);
+		ITEM_POSmark_pos(EYE_WIN,6,3);
+
+		EYE_WINset(7, 0, (float)(-1)*fabs(R_3), target_window_X,target_window_Y);
+		ITEM_POSmark_pos(EYE_WIN,7,3);
+
+		EYE_WINset(8, fabs(R_3)*sqrt((float)(0.5)), (float)(-1)*fabs(R_3)*sqrt((float)(0.5)), target_window_X,target_window_Y);
+		ITEM_POSmark_pos(EYE_WIN,8,3);
+
+	
+		GmoveABS(TEST1, fabs(R_3), 0);
+		GmoveABS(TEST2, fabs(R_3)*sqrt((float)(0.5)), fabs(R_3)*sqrt((float)(0.5)));
+		GmoveABS(TEST3, 0, fabs(R_3));
+		GmoveABS(TEST4, (float)(-1)*fabs(R_3)*sqrt((float)(0.5)), fabs(R_3)*sqrt((float)(0.5)));
+		GmoveABS(TEST5, (float)(-1)*fabs(R_3), 0);
+		GmoveABS(TEST6, (float)(-1)*fabs(R_3)*sqrt((float)(0.5)), (float)(-1)*fabs(R_3)*sqrt((float)(0.5)));
+		GmoveABS(TEST7, 0, (float)(-1)*fabs(R_3));
+		GmoveABS(TEST8, fabs(R_3)*sqrt((float)(0.5)), (float)(-1)*fabs(R_3)*sqrt((float)(0.5)));
+
+		Gon_off(TEST0, ON); //punto de fijación
+		Gflush(1);
+		DEVoutp(0,0x02,0x40);
+		send_code(0xFD);
+
+		set_timer(tiempo_punto_fijacion);
+		while(!timer_expired()){}
+
+		MS_TIMERset(1,fixation_time);
+
+		while(MS_TIMERcheck(1)){
+		
+			fijacion1=get_fixation_state();
+
+			if(fijacion1==0){
+
+				Gon_off(TEST0,OFF);
+				Gflush(1);}
+				//send_code(0xFA);
+				//DEVoutp(0,0x02,0x40);
+			 	//break_control=2;
+			 	//BLOCKset_next(block,condition+1);
+			 	//break;} // Break fixation
+
+			if(fijacion1 != 0) {
+				send_code(0xF9);
+				DEVoutp(0,0x02,0x40);
+				//reward();
+				MS_TIMERset(1,0);
+				MS_TIMERset(2,stimulus_time);
+				while(MS_TIMERcheck(2)){
+
+					fijacion2=get_fixation_state();							
+
+						Gon_off(TEST1,ON);
+						Gon_off(TEST2,ON);
+						Gon_off(TEST3,ON);
+						Gon_off(TEST4,ON);
+						Gon_off(TEST5,ON);
+						Gon_off(TEST6,ON);
+						Gon_off(TEST7,ON);
+						Gon_off(TEST8,ON);
+						Gon_off(TEST0,OFF);
+						Gflush(1);
+
+
+
+
+		Mprintf(2,"Fix: %i [%i %i] (%i %i)", condition_absolute, fijacion1, break_control, sector, window);
+
+						if(fijacion2 == 0){
+							
+							Gon_off(TEST0,OFF);
+							Gflush(1);}
+							//send_code(0xFA);
+							//DEVoutp(0,0x02,0x40);
+						 	//break_control=2;
+						 	//BLOCKset_next(block,condition);
+						 	//break;} // Break fixation
+
+							}
+						}
+					}
+						
+				send_code(condition_absolute);
+				DEVoutp(0,0x02,0x40);
+
+		MS_TIMERset(3,response_time_3);
+
+		if(fijacion1==0){
+		//condition_absolute=condition_absolute-1;
+		BLOCKset_next(block,condition_absolute);
+		break;
+		send_code(0xFA);
+		DEVoutp(0,0x02,0x40);}
+
+		if(fijacion1 != 0){
+		
+		Gon_off(TEST1,ON);
+		Gon_off(TEST2,ON);
+		Gon_off(TEST3,ON);
+		Gon_off(TEST4,ON);
+		Gon_off(TEST5,ON);
+		Gon_off(TEST6,ON);
+		Gon_off(TEST7,ON);
+		Gon_off(TEST8,ON);
+		Gon_off(TEST0,OFF);
+ 		Gflush(1);
+		
+		while(MS_TIMERcheck(3)){
+
+					if(ITEM_POSeye_ishere(EYE_WIN,1)){
+							
+						window=1;
+						response_correct(0);}
+						//reward();
+						//break;}
+
+					if(ITEM_POSeye_ishere(EYE_WIN,2)){
+								
+						window=2;
+						response_correct(0);}
+						//reward();
+						//break;}
+
+					if(ITEM_POSeye_ishere(EYE_WIN,3)){
+								
+						window=3;
+						response_correct(0);}
+						//reward();
+						//break;}
+
+					if(ITEM_POSeye_ishere(EYE_WIN,4)){
+								
+						window=4;
+						response_correct(0);}		
+						//reward();
+						//break;}
+
+					if(ITEM_POSeye_ishere(EYE_WIN,5)){
+								
+						window=5;
+						response_correct(0);}
+						//reward();
+						//break;}
+
+					if(ITEM_POSeye_ishere(EYE_WIN,6)){
+								
+						window=6;
+						response_correct(0);}
+						//reward();
+						//break;}
+
+					if(ITEM_POSeye_ishere(EYE_WIN,7)){
+								
+						window=7;
+						response_correct(0);}
+						//reward();
+						//break;}
+
+					if(ITEM_POSeye_ishere(EYE_WIN,8)){
+								
+						window=8;
+						response_correct(0);}
+						//reward();
+						//break;}
+
+						
+					}//cierra el MS_TIMER(3)
+							
+		Gon_off(TEST1,OFF);
+		Gon_off(TEST2,OFF);
+		Gon_off(TEST3,OFF);
+		Gon_off(TEST4,OFF);
+		Gon_off(TEST5,OFF);
+		Gon_off(TEST6,OFF);
+		Gon_off(TEST7,OFF);
+		Gon_off(TEST8,OFF);
+ 		Gflush(1);
+				}
+
+}//fin bloque 3
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+//aciertos
+		
+		Mprintf(3,"Fix: %i [%i %i] (%i %i)", condition_absolute, fijacion2, break_control, sector, window);
+
+		if(window !=0 && (condition_absolute == 1) && (window == 1)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xA1);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 2) && (window == 2)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xA2);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 3) && (window == 3)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xA3);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 4) && (window == 4)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xA4);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 5) && (window == 5)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xA5);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 6) && (window == 6)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xA6);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 7) && (window == 7)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xA7);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 8) && (window == 8)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xA8);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 9) && (window == 9)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xB1);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 10) && (window == 10)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xB2);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 11) && (window == 11)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xB3);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 12) && (window == 12)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xB4);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 13) && (window == 13)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xB5);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 14) && (window == 14)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xB6);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 15) && (window == 15)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xB7);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 16) && (window == 16)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xB8);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 17) && (window == 17)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xC1);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 18) && (window == 18)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xC2);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 19) && (window == 19)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xC3);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 20) && (window == 20)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xC4);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 21) && (window == 21)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xC5);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 22) && (window == 22)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xC6);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 23) && (window == 23)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xC7);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 24) && (window == 24)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xC8);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 25) && (window == 25)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xD1);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 26) && (window == 26)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xD2);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 27) && (window == 27)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xD3);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 28) && (window == 28)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xD4);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 29) && (window == 29)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xD5);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 30) && (window == 30)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xD6);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 31) && (window == 31)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xD7);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 32) && (window == 32)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xD8);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 33) && (window == 33)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xE1);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 34) && (window == 34)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xE2);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 35) && (window == 35)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xE3);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 36) && (window == 36)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xE4);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 37) && (window == 37)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xE5);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 38) && (window == 38)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xE6);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 39) && (window == 39)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xE7);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+		if(window !=0 && (condition_absolute == 40) && (window == 40)){ 
+			acierto=acierto+1;
+			response_correct(0);
+			send_code(0xE8);
+			DEVoutp(0,0x02,0x40);
+			Mprintf(5,"Succes!");
+			reward();send_code(0xF2);DEVoutp(0,0x02,0x40);}
+
+//fallos
+
+		if(window !=0 && (condition_absolute == 1) && (window != 1)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 2) && (window != 2)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 3) && (window != 3)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 4) && (window != 4)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 5) && (window != 5)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 6) && (window != 6)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 7) && (window != 7)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 8) && (window != 8)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 9) && (window != 9)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 10) && (window != 10)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 11) && (window != 11)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 12) && (window != 12)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 13) && (window != 13)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 14) && (window != 14)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 15) && (window != 15)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 16) && (window != 16)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 17) && (window != 17)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 18) && (window != 18)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 19) && (window != 19)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 20) && (window != 20)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 21) && (window != 21)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 22) && (window != 22)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 23) && (window != 23)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 24) && (window != 24)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 25) && (window != 25)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 26) && (window != 26)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 27) && (window != 27)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 28) && (window != 28)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 29) && (window != 29)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 30) && (window != 30)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 31) && (window != 31)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 32) && (window != 32)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 33) && (window != 33)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 34) && (window != 34)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 35) && (window != 35)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 36) && (window != 36)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 37) && (window != 37)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 38) && (window != 38)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 39) && (window != 39)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+		if(window !=0 && (condition_absolute == 40) && (window != 40)){ 
+			send_code(0xF5);DEVoutp(0,0x02,0x40);break;}
+	
+
+if(fijacion1!=0 && window==0){Mprintf(5,"No Movement");send_code(0xA0);DEVoutp(0,0x02,0x40);break;}
+
+
+trial_total=trial_total+1;
+porcentage=(float)acierto/(float)(trial_total)*100;
+		
+		Mprintf(4,"Fix: %i Condition: %i Trial total: %i Porcentage: %i ", fix_state, condition_absolute, trial_total, porcentage);
+
+//BLOCKset_next(1,condition+1);
+
+	set_timer (inter_trial_time);
+
+	//Mprintf(3," sector %i ", sector);
+	//Mprintf(4," izquierda: %i aciertos de %i intentos (Porcentage %.1f %) ", aizq, trializq, (float)aizq/(float)(trializq)*100);
+	//Mprintf(5," derecha: %i aciertos de %i intentos (Porcentage %.1f %) ", ader, trialder, (float)ader/(float)(trialder)*100);
+	
+	while(!timer_expired()){} // Wait inter-trial time
+
+
+
+send_code(0xFE);	// Stop recording
+DEVoutp(0,0x02,0x40);
+collect_data(OFF);
+encode(END_EYE_DATA);
+put_eye_data_in_buf(0);
+//put_epp_data_in_buf(0);
+		
+}  // end main
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////
+// 			Function Definition						/////////
+/////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+void send_code(int code)
+
+
+{
+	DEVoutp(0,0x01,code);
+	DEVoutp(0,0x02,0x80);
+	DEVoutp(0,0x02,0x00);
+	DEVoutp(0,0x01,0x6a);
+
+	
+return;
+
+}
+
+
+int maintain_fixation()
+
+
+{
+int a;
+a=3;
+MS_TIMERset(5,1000);
+while(MS_TIMERcheck(5)){
+	
+
+	//mouse_to_eye();
+	if(get_fixation_state() == 0){
+					a=2;
+				      }
+
+	else if (MS_TIMERcheck(5) == 0) {
+					a=1;			      
+				}
+
+			}
+return a;
+}
+
+
+void mouse_to_eye()
+
+
+{
+	
+
+	
+	
+set_EOGsize(2);
+	MouseMoved( & x, & y, & b);
+
+	
+	mx=mx+2*x;
+	my=my+2*y;
+	set_EOGnew_x(mx);
+	set_EOGnew_y(my);
+
+	SCREENupdate_eye_pos(mx,my);
+	
+
+
+}
+
+
+void write_text_file(float X, float Y)
+
+
+{
+
+plong fd, datafilename;
+plong date;
+
+datafilename=calloc(24,sizeof(plong));
+date=calloc(26,sizeof(plong));
+getDataFileName(datafilename);
+getTimeDateString(date);
+strcat(datafilename,".txt");
+fd=fopen(datafilename,"r");
+
+	if (fd == 0 ){ //Mprintf(1,"creating file %s %s",fd, date);
+	set_timer(1000);
+	while(!timer_expired()){}
+	fd=fopen(datafilename,"a+");
+	fprintf(fd,"Time Date: %s\t X_Receptor= %f Y_Receptor= %f\n", date, X, Y);
+	fclose(fd);
+	free(datafilename);
+	free(date);
+	//return;
+		}
+else
+		{ 
+		//Mprintf(1,"file already exists %s %s",fd, datafilename);
+		free(datafilename);
+		free(date);
+		fclose(fd);		
+		//return;	
+		}
+
+}
+
+
+//int mod(int a, int b)
+//
+//
+//{
+//int c;
+
+//c=a-(a/b)*b;
+
+//return c;
+
+//}

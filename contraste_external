@@ -1,0 +1,51 @@
+/*
+
+//inter trial time
+
+	#SET _int0 inter_trial_time 1 500
+
+//variable fixation time config
+
+	#SET _int1 fixation_time 1 400
+
+	#SET _int2 tiempo_punto_fijacion 1 700
+
+	#SET _int3 fixation_time_delta 1 10
+
+//Variable stimulus time config
+
+	#SET _int4 stimulus_time 1 200    
+
+//Response time    
+
+	#SET _int5 response_time_1 1 100
+
+	#SET _int6 response_time_2 1 140
+
+	#SET _int7 response_time_3 1 180
+
+// Reward Time
+
+	#SET _int8 reward_time 1 200
+
+// Receptor field coordinates
+
+	#SET _float0 R_1 1 4
+
+	#SET _float1 R_2 1 7
+
+	#SET _float2 R_3 1 10
+
+	#SET _float3 radius 1 1
+
+	#SET _float4 target_window_X 1 1.5
+	
+	#SET _float5 target_window_Y 1 1.5
+
+// Count correct trials
+
+	#SET _int9 trial_total 1 0
+
+	#SET _int10 acierto 1 0
+
+*/
